@@ -7,6 +7,7 @@ from litestar.exceptions import HTTPException, NotFoundException
 from litestar.middleware import DefineMiddleware
 from litestar.status_codes import HTTP_404_NOT_FOUND, HTTP_500_INTERNAL_SERVER_ERROR
 
+from app.auth.routes import csrf, register, session, sign_in, sign_out
 from app.config import ConfigurationError, Settings
 from app.db.fixtures import load_fixtures
 from app.db.migrations import make_engine, migrate
@@ -31,8 +32,8 @@ class JsonFormatter(logging.Formatter):
 
 
 def configure_logging() -> None:
-    if any(isinstance(handler.formatter, JsonFormatter) for handler in logger.handlers):
-        return
+    for handler in logger.handlers[:]:
+        logger.removeHandler(handler)
     handler = logging.StreamHandler()
     handler.setFormatter(JsonFormatter())
     logger.addHandler(handler)
@@ -116,9 +117,9 @@ def create_app(settings: Settings | None = None, *, run_migrations: bool = True)
             )
         )
         raise
+    engine = make_engine(settings.database_url)
     if run_migrations:
         try:
-            engine = make_engine(settings.database_url)
             migrate(engine)
             load_fixtures(engine)
         except Exception:
@@ -126,9 +127,12 @@ def create_app(settings: Settings | None = None, *, run_migrations: bool = True)
                 json.dumps({"event": "startup_failure", "code": "database_prepare_failed"})
             )
             raise
-    return Litestar(
-        route_handlers=[health],
+    app = Litestar(
+        route_handlers=[health, csrf, register, sign_in, session, sign_out],
         middleware=[DefineMiddleware(cast(Any, RequestLoggingMiddleware))],
         exception_handlers={Exception: exception_handler},
         openapi_config=None,
     )
+    app.state.settings = settings
+    app.state.auth_engine = engine
+    return app
