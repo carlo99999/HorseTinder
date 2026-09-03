@@ -2,6 +2,7 @@ from importlib import import_module
 from typing import Protocol, cast
 
 from sqlalchemy import Connection, Engine, create_engine, text
+from sqlalchemy.pool import StaticPool
 
 
 class Migration(Protocol):
@@ -10,7 +11,10 @@ class Migration(Protocol):
     def upgrade(self, connection: Connection) -> None: ...
 
 
-MIGRATION_MODULES = ("app.db.migration_versions.foundation_0001",)
+MIGRATION_MODULES = (
+    "app.db.migration_versions.foundation_0001",
+    "app.db.migration_versions.auth_0002",
+)
 
 
 def migrations() -> tuple[Migration, ...]:
@@ -25,6 +29,13 @@ def migrations() -> tuple[Migration, ...]:
 
 
 def make_engine(database_url: str) -> Engine:
+    if database_url == "sqlite:///:memory:":
+        return create_engine(
+            database_url,
+            connect_args={"check_same_thread": False},
+            poolclass=StaticPool,
+            pool_pre_ping=True,
+        )
     return create_engine(database_url, pool_pre_ping=True)
 
 

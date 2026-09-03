@@ -37,7 +37,7 @@ story_location: _bmad-output/implementation-artifacts
 development_status:
   epic-1: in-progress
   1-1-establish-the-runnable-horse-tinder-foundation: review
-  1-2-enter-horse-tinder-securely: backlog
+  1-2-enter-horse-tinder-securely: review
   1-3-create-and-manage-a-horse-profile: backlog
   1-4-use-a-polished-original-app-shell: backlog
   epic-1-retrospective: optional
