@@ -43,6 +43,7 @@ def load_fixtures(engine: Engine) -> None:
                     bio=bio,
                     trait=trait,
                     created_at=FIXTURE_TIMESTAMP,
+                    updated_at=FIXTURE_TIMESTAMP,
                 )
                 session.add(profile)
                 session.flush()

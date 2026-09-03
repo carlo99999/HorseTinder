@@ -4,6 +4,17 @@ export type ApiFailure = { code: string; message: string; details?: Record<strin
 export type CsrfDto = { data: { csrfToken: string } };
 export type AuthDto = { data: { authenticated: true; csrfToken: string } };
 export type SessionDto = { data: { authenticated: true; csrfToken: string } };
+export type Profile = {
+  id: string;
+  displayName: string;
+  imageUrl: string;
+  bio: string;
+  trait: string;
+  createdAt: string;
+  updatedAt: string;
+};
+export type ProfileDto = { data: Profile };
+export type ProfileInput = Pick<Profile, "displayName" | "imageUrl" | "bio" | "trait">;
 
 export class ApiError extends Error {
   constructor(public readonly failure: ApiFailure, public readonly status: number) {
@@ -58,4 +69,24 @@ export async function signOut(csrfToken: string): Promise<void> {
     headers: { Accept: "application/json", "X-CSRF-Token": csrfToken },
   });
   if (!response.ok) throw new ApiError((await response.json()) as ApiFailure, response.status);
+}
+
+export function getMyProfile(): Promise<ProfileDto> {
+  return request<ProfileDto>("/profiles/me");
+}
+
+function saveProfile(path: string, method: "POST" | "PUT", profile: ProfileInput, csrfToken: string): Promise<ProfileDto> {
+  return request<ProfileDto>(path, {
+    method,
+    headers: { "Content-Type": "application/json", "X-CSRF-Token": csrfToken },
+    body: JSON.stringify(profile),
+  });
+}
+
+export function createMyProfile(profile: ProfileInput, csrfToken: string): Promise<ProfileDto> {
+  return saveProfile("/profiles/me", "POST", profile, csrfToken);
+}
+
+export function updateMyProfile(profile: ProfileInput, csrfToken: string): Promise<ProfileDto> {
+  return saveProfile("/profiles/me", "PUT", profile, csrfToken);
 }

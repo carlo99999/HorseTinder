@@ -20,3 +20,7 @@ Run `uv run pytest`, `uv run ruff check .`, `npm --prefix apps/web test -- --run
 ## Secure entry
 
 The browser first requests `GET /api/v1/auth/csrf`, then sends its returned token as `X-CSRF-Token` for registration or sign-in. Successful authentication sets an HttpOnly, SameSite=Lax cookie and returns a separate session CSRF capability for later unsafe requests such as sign-out. In production the cookie is also Secure. Never put either token, account email, or password data in browser storage.
+
+## Horse Profiles
+
+After signing in, create a private owner-scoped profile with `POST /api/v1/profiles/me` or edit it with `PUT /api/v1/profiles/me`. Send the session CSRF capability as `X-CSRF-Token`; `GET /api/v1/profiles/me` returns only the public fictional profile fields. Each account can create one profile, while deterministic discovery fixtures remain unowned.

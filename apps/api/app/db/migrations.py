@@ -14,6 +14,7 @@ class Migration(Protocol):
 MIGRATION_MODULES = (
     "app.db.migration_versions.foundation_0001",
     "app.db.migration_versions.auth_0002",
+    "app.db.migration_versions.profiles_0003",
 )
 
 

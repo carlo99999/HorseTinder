@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { API_BASE_PATH, getAnonymousCsrf, getHealth, register } from "./api";
+import { API_BASE_PATH, createMyProfile, getAnonymousCsrf, getHealth, getMyProfile, register, updateMyProfile } from "./api";
 import config from "../vite.config";
 
 describe("API client", () => {
@@ -46,5 +46,29 @@ describe("API client", () => {
 
   it("proxies the versioned API path during local development", () => {
     expect(config.server?.proxy?.[API_BASE_PATH]).toMatchObject({ target: "http://api:8000" });
+  });
+
+  it("sends profile fields and the session CSRF capability to the owner endpoint", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({ ok: true, json: async () => ({ data: {} }) });
+    vi.stubGlobal("fetch", fetchMock);
+    const profile = { displayName: "Marevel", imageUrl: "https://example.test/mare.jpg", bio: "Gentle canter fan.", trait: "Kind" };
+
+    await createMyProfile(profile, "session-token");
+
+    expect(fetchMock).toHaveBeenCalledWith("/api/v1/profiles/me", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { Accept: "application/json", "Content-Type": "application/json", "X-CSRF-Token": "session-token" },
+      body: JSON.stringify(profile),
+    });
+
+    await updateMyProfile(profile, "session-token");
+    expect(fetchMock).toHaveBeenLastCalledWith("/api/v1/profiles/me", expect.objectContaining({ method: "PUT", credentials: "same-origin" }));
+
+    await getMyProfile();
+    expect(fetchMock).toHaveBeenLastCalledWith("/api/v1/profiles/me", {
+      credentials: "same-origin",
+      headers: { Accept: "application/json" },
+    });
   });
 });
