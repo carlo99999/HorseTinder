@@ -32,11 +32,18 @@ class AccountSession(Base):
 class HorseProfile(Base):
     __tablename__ = "horse_profiles"
     id: Mapped[UUID] = mapped_column(Uuid, primary_key=True, default=uuid4)
+    # Fixtures deliberately have no owner so that they remain available for discovery.
+    account_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("accounts.id", use_alter=True), nullable=True, index=True
+    )
     display_name: Mapped[str] = mapped_column(String(100), unique=True)
     image_url: Mapped[str] = mapped_column(String(500))
     bio: Mapped[str] = mapped_column(Text)
     trait: Mapped[str] = mapped_column(String(100))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now(), nullable=False
+    )
 
 
 class Match(Base):

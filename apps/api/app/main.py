@@ -11,6 +11,7 @@ from app.auth.routes import csrf, register, session, sign_in, sign_out
 from app.config import ConfigurationError, Settings
 from app.db.fixtures import load_fixtures
 from app.db.migrations import make_engine, migrate
+from app.profiles.routes import create_my_profile, get_my_profile, update_my_profile
 
 logger = logging.getLogger("horsetinder.api")
 
@@ -128,7 +129,17 @@ def create_app(settings: Settings | None = None, *, run_migrations: bool = True)
             )
             raise
     app = Litestar(
-        route_handlers=[health, csrf, register, sign_in, session, sign_out],
+        route_handlers=[
+            health,
+            csrf,
+            register,
+            sign_in,
+            session,
+            sign_out,
+            get_my_profile,
+            create_my_profile,
+            update_my_profile,
+        ],
         middleware=[DefineMiddleware(cast(Any, RequestLoggingMiddleware))],
         exception_handlers={Exception: exception_handler},
         openapi_config=None,

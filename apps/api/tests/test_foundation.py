@@ -8,7 +8,7 @@ from app.db.migrations import migrate
 from app.db.models import Gesture, HorseProfile, Match
 from app.main import create_app
 from litestar.testing import TestClient
-from sqlalchemy import create_engine, func, select
+from sqlalchemy import create_engine, func, inspect, select
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
@@ -82,6 +82,8 @@ def test_migrations_and_fixtures_are_repeatable() -> None:
         assert session.scalar(
             select(HorseProfile.id).where(HorseProfile.display_name == "Clover Comet")
         ) == UUID("11111111-1111-4111-8111-111111111111")
+    columns = {column["name"] for column in inspect(engine).get_columns("horse_profiles")}
+    assert {"account_id", "updated_at"}.issubset(columns)
 
 
 def test_cli_prepares_a_database(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> None:
