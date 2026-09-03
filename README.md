@@ -1,0 +1,18 @@
+# Horse Tinder
+
+An original, fictional horse-themed social parody. It is unaffiliated with Tinder and contains no Tinder marks, flame imagery, real-person data, payments, or location features.
+
+## Local development
+
+Prerequisites: Python 3.13.11, Node.js 20.19+, npm, Docker Compose.
+
+1. Copy `.env.example` to `.env` and replace `APP_SECRET` with a local random value.
+2. Start the complete local stack: `docker compose up --build`. The API migrates and loads fixtures before accepting traffic; open `http://localhost:5173`.
+3. The Vite dev server proxies same-origin `/api/v1` requests to the API container. For a host-run SPA, use `npm --prefix apps/web ci` then `npm --prefix apps/web run dev` while the API is available at `http://localhost:8000` (set the proxy target accordingly).
+4. To prepare a reset database manually, export the server-only values from `.env` and run `PYTHONPATH=apps/api uv run python -m app.cli`. The command applies ordered migrations, then repeatably loads the fictional profiles, mutual match, and gestures.
+
+The SPA calls only same-origin `/api/v1` JSON. An executable production topology is `docker compose -f compose.yaml -f compose.production.yaml up --build`; nginx serves the SPA at `http://localhost:8080` and proxies `/api/v1` to the API service. Browser builds never receive `DATABASE_URL` or `APP_SECRET`.
+
+## Verification
+
+Run `uv run pytest`, `uv run ruff check .`, and `npm --prefix apps/web run build`. Health is available at `GET /api/v1/health` and returns `{"data":{"service":"horse-tinder-api","version":"v1"}}`. API failures use `{ "code", "message", "details"? }`.

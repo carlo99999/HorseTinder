@@ -1,0 +1,12 @@
+.env
+.git
+.github
+.venv
+__pycache__
+*.py[oc]
+.pytest_cache
+apps/web/node_modules
+apps/web/dist
+apps/web/*.tsbuildinfo
+_bmad
+_bmad-output
