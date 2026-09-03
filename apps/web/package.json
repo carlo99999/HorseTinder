@@ -1,0 +1,1 @@
+{"name":"horse-tinder-web","private":true,"version":"0.1.0","type":"module","scripts":{"dev":"vite","build":"tsc -b && vite build","test":"vitest run"},"dependencies":{"@vitejs/plugin-react":"latest","react":"19.2.0","react-dom":"19.2.0","vite":"8.2.0"},"devDependencies":{"@types/react":"latest","@types/react-dom":"latest","typescript":"~5.9.3","vitest":"latest"}}

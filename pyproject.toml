@@ -1,10 +1,14 @@
 [project]
 name = "horsetinder"
 version = "0.1.0"
-description = "Add your description here"
+description = "Horse Tinder's full-stack foundation"
 readme = "README.md"
-requires-python = ">=3.9"
-dependencies = []
+requires-python = ">=3.11"
+dependencies = [
+    "litestar==2.24.*",
+    "psycopg[binary]>=3.2,<4",
+    "sqlalchemy>=2.0,<3",
+]
 
 [build-system]
 requires = ["uv_build>=0.12.5,<0.13.0"]
@@ -20,6 +24,7 @@ dev = [
 
 [tool.ruff]
 line-length = 100
+extend-exclude = [".agents", "_bmad", "_bmad-output"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B"]
@@ -29,6 +34,9 @@ quote-style = "double"
 indent-style = "space"
 
 [tool.pyrefly]
-project-includes = ["src", "tests"]
-search-path = ["src"]
-python-version = "3.14"
+project-includes = ["src", "tests", "apps/api"]
+search-path = ["src", "apps/api"]
+python-version = "3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["apps/api/tests"]
