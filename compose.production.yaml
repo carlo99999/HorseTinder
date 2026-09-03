@@ -1,0 +1,10 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+    image: horsetinder-web:local
+    command: null
+    working_dir: /
+    ports: !override ["8080:80"]
+    volumes: !override []

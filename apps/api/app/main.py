@@ -1,15 +1,43 @@
 import json
 import logging
-from typing import Any
+from typing import Any, cast
 
 from litestar import Litestar, Request, Response, get
 from litestar.exceptions import HTTPException, NotFoundException
+from litestar.middleware import DefineMiddleware
 from litestar.status_codes import HTTP_404_NOT_FOUND, HTTP_500_INTERNAL_SERVER_ERROR
 
 from app.config import ConfigurationError, Settings
+from app.db.fixtures import load_fixtures
 from app.db.migrations import make_engine, migrate
 
 logger = logging.getLogger("horsetinder.api")
+
+
+class JsonFormatter(logging.Formatter):
+    """Render application events as one structured JSON object per line."""
+
+    def format(self, record: logging.LogRecord) -> str:
+        event: dict[str, Any] = {
+            "timestamp": self.formatTime(record, "%Y-%m-%dT%H:%M:%SZ"),
+            "level": record.levelname.lower(),
+            "logger": record.name,
+        }
+        try:
+            event.update(json.loads(record.getMessage()))
+        except (TypeError, json.JSONDecodeError):
+            event["message"] = record.getMessage()
+        return json.dumps(event, sort_keys=True)
+
+
+def configure_logging() -> None:
+    if any(isinstance(handler.formatter, JsonFormatter) for handler in logger.handlers):
+        return
+    handler = logging.StreamHandler()
+    handler.setFormatter(JsonFormatter())
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
+    logger.propagate = False
 
 
 def error_response(
@@ -59,8 +87,14 @@ class RequestLoggingMiddleware:
 
 
 def exception_handler(_: Request[Any, Any, Any], exc: Exception) -> Response:
-    if isinstance(exc, NotFoundException | HTTPException):
+    if isinstance(exc, NotFoundException):
         return error_response("not_found", "API route was not found.", HTTP_404_NOT_FOUND)
+    if isinstance(exc, HTTPException):
+        detail = exc.detail if isinstance(exc.detail, dict) else None
+        message = (
+            exc.detail if isinstance(exc.detail, str) else "The request could not be completed."
+        )
+        return error_response("http_error", message, exc.status_code, detail)
     logger.exception(json.dumps({"event": "unhandled_error", "type": type(exc).__name__}))
     return error_response(
         "internal_error", "An unexpected server error occurred.", HTTP_500_INTERNAL_SERVER_ERROR
@@ -68,6 +102,7 @@ def exception_handler(_: Request[Any, Any, Any], exc: Exception) -> Response:
 
 
 def create_app(settings: Settings | None = None, *, run_migrations: bool = True) -> Litestar:
+    configure_logging()
     try:
         settings = settings or Settings.from_environment()
     except ConfigurationError as exc:
@@ -83,13 +118,17 @@ def create_app(settings: Settings | None = None, *, run_migrations: bool = True)
         raise
     if run_migrations:
         try:
-            migrate(make_engine(settings.database_url))
+            engine = make_engine(settings.database_url)
+            migrate(engine)
+            load_fixtures(engine)
         except Exception:
-            logger.exception(json.dumps({"event": "startup_failure", "code": "migration_failed"}))
+            logger.exception(
+                json.dumps({"event": "startup_failure", "code": "database_prepare_failed"})
+            )
             raise
     return Litestar(
         route_handlers=[health],
-        middleware=[RequestLoggingMiddleware],
+        middleware=[DefineMiddleware(cast(Any, RequestLoggingMiddleware))],
         exception_handlers={Exception: exception_handler},
         openapi_config=None,
     )

@@ -4,14 +4,14 @@ An original, fictional horse-themed social parody. It is unaffiliated with Tinde
 
 ## Local development
 
-Prerequisites: Python 3.11+, Node.js 20+, npm, Docker Compose.
+Prerequisites: Python 3.13.11, Node.js 20.19+, npm, Docker Compose.
 
 1. Copy `.env.example` to `.env` and replace `APP_SECRET` with a local random value.
-2. Start PostgreSQL and the API: `docker compose up --build`.
-3. In another terminal, install and start the SPA: `npm --prefix apps/web install` then `npm --prefix apps/web run dev`.
-4. To prepare a reset database manually, export the server-only values from `.env` and run `PYTHONPATH=apps/api uv run python -m app.cli`. The command migrates first, then repeatably loads the fictional profiles, mutual match, and gestures.
+2. Start the complete local stack: `docker compose up --build`. The API migrates and loads fixtures before accepting traffic; open `http://localhost:5173`.
+3. The Vite dev server proxies same-origin `/api/v1` requests to the API container. For a host-run SPA, use `npm --prefix apps/web ci` then `npm --prefix apps/web run dev` while the API is available at `http://localhost:8000` (set the proxy target accordingly).
+4. To prepare a reset database manually, export the server-only values from `.env` and run `PYTHONPATH=apps/api uv run python -m app.cli`. The command applies ordered migrations, then repeatably loads the fictional profiles, mutual match, and gestures.
 
-The SPA calls only same-origin `/api/v1` JSON. In production, place the SPA and API behind the same origin; browser builds never receive `DATABASE_URL` or `APP_SECRET`.
+The SPA calls only same-origin `/api/v1` JSON. An executable production topology is `docker compose -f compose.yaml -f compose.production.yaml up --build`; nginx serves the SPA at `http://localhost:8080` and proxies `/api/v1` to the API service. Browser builds never receive `DATABASE_URL` or `APP_SECRET`.
 
 ## Verification
 

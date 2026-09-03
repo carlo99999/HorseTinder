@@ -87,24 +87,35 @@ Use a migration and fixture command that can be run independently in development
 
 **API boundary and startup**
 
-- Centralizes versioned routing, structured logging, safe startup failures, and JSON errors.
-  [`main.py:70`](../../apps/api/app/main.py#L70)
+- Assembles the versioned API, safe errors, structured events, migration, and fixture startup.
+  [`main.py:104`](../../apps/api/app/main.py#L104)
 
-- Keeps browser requests same-origin and constrained to the versioned API base.
-  [`api.ts:1`](../../apps/web/src/api.ts#L1)
+- Keeps browser traffic inside the same-origin versioned API boundary during development.
+  [`vite.config.ts:3`](../../apps/web/vite.config.ts#L3)
+
+- Moves health probing out of render and exposes readable loading and failure states.
+  [`main.tsx:5`](../../apps/web/src/main.tsx#L5)
 
 **Database authority**
 
-- Applies the recorded schema revision before the API accepts traffic.
-  [`migrations.py:12`](../../apps/api/app/db/migrations.py#L12)
+- Applies independently versioned revisions under a PostgreSQL advisory lock.
+  [`migrations.py:31`](../../apps/api/app/db/migrations.py#L31)
 
-- Loads stable fictional profiles, reciprocal gestures, and the mutual-match fixture path.
-  [`fixtures.py:22`](../../apps/api/app/db/fixtures.py#L22)
+- Defines the first durable schema with canonical match and valid gesture constraints.
+  [`foundation_0001.py:12`](../../apps/api/app/db/migration_versions/foundation_0001.py#L12)
 
-**Local runtime and verification**
+- Seeds stable fictional profiles, reciprocal gestures, and the mutual-match path.
+  [`fixtures.py:33`](../../apps/api/app/db/fixtures.py#L33)
 
-- Wires PostgreSQL 18, API, and SPA into the documented local stack.
+**Runnable local topology**
+
+- Starts PostgreSQL, prepared API, and proxied SPA in one development command.
   [`compose.yaml:1`](../../compose.yaml#L1)
 
-- Exercises configuration, error-contract, startup-log, migration, and fixture guarantees.
-  [`test_foundation.py:12`](../../apps/api/tests/test_foundation.py#L12)
+- Replaces development SPA with an nginx same-origin production gateway.
+  [`compose.production.yaml:1`](../../compose.production.yaml#L1)
+
+**Verification**
+
+- Exercises configuration, API errors, logging, migrations, fixtures, CLI, and persistence constraints.
+  [`test_foundation.py:16`](../../apps/api/tests/test_foundation.py#L16)

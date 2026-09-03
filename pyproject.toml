@@ -3,7 +3,7 @@ name = "horsetinder"
 version = "0.1.0"
 description = "Horse Tinder's full-stack foundation"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.13.11"
 dependencies = [
     "litestar==2.24.*",
     "psycopg[binary]>=3.2,<4",
@@ -36,7 +36,7 @@ indent-style = "space"
 [tool.pyrefly]
 project-includes = ["src", "tests", "apps/api"]
 search-path = ["src", "apps/api"]
-python-version = "3.11"
+python-version = "3.13"
 
 [tool.pytest.ini_options]
 testpaths = ["apps/api/tests"]

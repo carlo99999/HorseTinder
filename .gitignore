@@ -9,6 +9,7 @@ wheels/
 # Virtual environments
 .venv
 .env
+.pytest_cache/
 apps/web/node_modules/
 apps/web/dist/
 apps/web/*.tsbuildinfo
