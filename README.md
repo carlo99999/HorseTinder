@@ -24,3 +24,9 @@ The browser first requests `GET /api/v1/auth/csrf`, then sends its returned toke
 ## Horse Profiles
 
 After signing in, create a private owner-scoped profile with `POST /api/v1/profiles/me` or edit it with `PUT /api/v1/profiles/me`. Send the session CSRF capability as `X-CSRF-Token`; `GET /api/v1/profiles/me` returns only the public fictional profile fields. Each account can create one profile, while deterministic discovery fixtures remain unowned.
+
+## Shell accessibility checks
+
+After signing in, verify that the centered desktop top navigation and mobile bottom navigation both expose Discovery, Matches, and Profile. Use the keyboard to reach the visible “Skip to main content” link and verify that it moves focus to the main content. Confirm each selected destination has a visible current state as well as the programmatic current-page state; Discovery and Matches should plainly say they are unavailable, without sample profiles or matches.
+
+Also check the Profile form at 200% text size and 400% browser zoom, then enable reduced motion and a forced-colors mode. Navigation, focus indicators, form labels, validation, saving, sign-out, and expired-session recovery must remain usable with no avoidable horizontal scrolling.
